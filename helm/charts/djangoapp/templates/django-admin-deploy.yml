@@ -1,0 +1,83 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.appName }}
+spec:
+  replicas: {{ .Values.appReplicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.appName }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.appName }}
+    spec:
+      initContainers:
+      - name: check-job-status
+        image: "{{ .Values.kubectlImage }}:{{ .Values.kubectlImageVersion }}"
+        command:
+          - /bin/sh
+          - -c
+          - |
+            while true; do
+              JOB_STATUS=$(kubectl get job django-migrations -n default -o=jsonpath='{.status.succeeded}')
+              if [ "$JOB_STATUS" == "1" ]; then
+                echo "Job 'django-migrations' succeeded!"
+                break
+              else
+                echo "Job 'django-migrations' has not succeeded yet. Retrying in 10 seconds..."
+                sleep 10
+              fi
+            done
+      containers:
+        - name: {{ .Values.appName }}
+          image: "{{ .Values.appImage }}:{{ .Values.appVersion }}"
+          command:
+            - sh
+            - -c
+            - exec gunicorn app.wsgi:application
+          envFrom:
+            - secretRef:
+                name: {{ .Values.secretName }}
+          volumeMounts:
+            - name: static-volume
+              mountPath: /usr/src/django-admin-example/staticfiles
+            - name: media-volume
+              mountPath: /usr/src/django-admin-example/media
+          ports:
+            - containerPort: {{ .Values.containerPort }}
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "128Mi"
+            limits:
+              cpu: "350m"
+              memory: "350Mi"
+      volumes:
+      - name: static-volume
+        persistentVolumeClaim:
+          claimName: static-pvc
+      - name: media-volume
+        persistentVolumeClaim:
+          claimName: media-pvc
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.appName }}
+  labels:
+    name: {{ .Values.appName }}
+spec:
+  selector:
+    app: {{ .Values.appName }}
+  ports:
+    - port: {{ .Values.servicePort }}
+      targetPort: {{ .Values.containerPort }}
+      protocol: TCP
+  type: {{ .Values.serviceType }}

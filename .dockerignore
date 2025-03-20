@@ -1,0 +1,46 @@
+# Ignore Python virtual environments
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore environment variables
+.env
+
+# Ignore IDE/editor configurations
+.idea/
+.vscode/
+
+# Ignore Git files
+.git
+.gitignore
+
+# Ignore local build artifacts
+*.log
+*.swp
+*.swo
+*.bak
+
+# Ignore Docker-related files that should not be copied
+Dockerfile
+docker-compose.yml
+docker-compose/
+
+# Ignore Helm and Kubernetes configuration if not needed in the image
+helm/
+k8s/
+
+# Ignore database initialization scripts
+init.sql
+
+# Ignore certificates
+*.crt
+
+# Ignore md files
+*.md
+
+# Ignore argocd files
+argocd/
+
+scripts/

@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-configmap
+data:
+  default.conf: |
+    server {
+      listen 80;
+
+      location /static/ {
+          alias /usr/src/django-admin-example/staticfiles/;
+      }
+
+      location /media/ {
+          alias /usr/src/django-admin-example/media/;
+      }
+
+      location / {
+          proxy_pass http://django-app:8080;
+      }
+    }

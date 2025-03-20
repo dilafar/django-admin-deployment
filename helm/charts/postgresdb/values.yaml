@@ -1,0 +1,19 @@
+appImage: postgres
+appVersion: 13
+secretName: postgres-secret
+appName: postgresdb
+containerPort: 5432
+servicePort: 5432
+serviceType: ClusterIP
+namespace: default
+configMapName: dbcreation-script
+persistentVolumeName: postgres-pv
+persistentVolumeNameSecond: postgres-pv-second
+persistentVolumeClaimName: postgres-pvc
+containerEnv:
+  - name: POSTGRES_DB
+    key: POSTGRES_DB
+  - name: POSTGRES_USER
+    key: POSTGRES_USER
+  - name: POSTGRES_PASSWORD
+    key: POSTGRES_PASSWORD

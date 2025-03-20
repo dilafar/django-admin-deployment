@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.appName }}
+spec:
+  serviceName: {{ .Values.appName }}
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.appName }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.appName }}
+    spec:
+      securityContext:
+        fsGroup: 999
+      containers:
+        - name: {{ .Values.appName }}
+          image: "{{ .Values.appImage }}:{{ .Values.appVersion }}"
+          ports:
+            - containerPort: {{ .Values.containerPort }}
+          env:
+            {{- range .Values.containerEnv }}
+            - name: {{ .name }}
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: {{ .key }}
+            {{- end }}
+          volumeMounts:
+            - name: postgresdb-vol
+              mountPath: /var/lib/postgresql/data
+              subPath: "pgdata"
+            - name: dbcreation-script
+              mountPath: /docker-entrypoint-initdb.d
+          readinessProbe:
+            exec:
+              command:
+              - sh
+              - -c
+              - pg_isready -U $(POSTGRES_USER) -d $(POSTGRES_DB)
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+      volumes:
+        - name: postgresdb-vol
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+        - name: dbcreation-script
+          configMap:
+            name: dbcreation-script
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.appName }}
+spec:
+  selector:
+    app: {{ .Values.appName }}
+  ports:
+    - port: {{ .Values.servicePort }}
+      targetPort: {{ .Values.containerPort }}
+      protocol: TCP
+  clusterIP: None

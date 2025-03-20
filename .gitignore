@@ -1,0 +1,35 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+
+# Environment variables
+.env
+
+# Logs and database files
+*.log
+
+# Ignore dependency directories
+node_modules/
+dist/
+build/
+
+# Ignore IDE/editor configurations
+.idea/
+.vscode/
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore compiled Python files
+*.egg-info/
+.eggs/
+*.manifest
+*.spec
+
+# Ignore certificates
+*.crt

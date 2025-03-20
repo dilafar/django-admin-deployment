@@ -1,0 +1,16 @@
+jobName: django-migrations
+appImage: fadhiljr/assignment
+appVersion: v1
+secretName: admin-secret
+appName: django-app
+appReplicas: 2
+containerPort: 8080
+servicePort: 8080
+serviceType: ClusterIP
+ingressName: django-app-ingress
+serviceAccountName: default
+namespace: default
+roleName: job-reader
+roleBindingName: job-reader-binding
+kubectlImage: fadhiljr/kubernetes-tools
+kubectlImageVersion: v1

@@ -1,0 +1,82 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: django-app
+  template:
+    metadata:
+      labels:
+        app: django-app
+    spec:
+      initContainers:
+      - name: check-job-status
+        image: fadhiljr/kubernetes-tools:v1
+        command:
+          - /bin/sh
+          - -c
+          - |
+            while true; do
+              JOB_STATUS=$(kubectl get job django-migrations -n default -o=jsonpath='{.status.succeeded}')
+              if [ "$JOB_STATUS" == "1" ]; then
+                echo "Job 'django-migrations' succeeded!"
+                break
+              else
+                echo "Job 'django-migrations' has not succeeded yet. Retrying in 10 seconds..."
+                sleep 10
+              fi
+            done
+      containers:
+        - name: django-app
+          image: fadhiljr/django-admin:v8
+          command:
+            - sh
+            - -c
+            - exec gunicorn django_admin_example.wsgi:application
+          envFrom:
+            - secretRef:
+                name: admin-secret
+          volumeMounts:
+            - name: static-volume
+              mountPath: /usr/src/django-admin-example/staticfiles
+            - name: media-volume
+              mountPath: /usr/src/django-admin-example/media
+          ports:
+            - containerPort: 8080
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "128Mi"
+            limits:
+              cpu: "350m"
+              memory: "350Mi"
+      volumes:
+      - name: static-volume
+        persistentVolumeClaim:
+          claimName: static-pvc
+      - name: media-volume
+        persistentVolumeClaim:
+          claimName: media-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: django-app
+  labels:
+    name: django-app
+spec:
+  selector:
+    app: django-app
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  type: ClusterIP

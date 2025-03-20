@@ -1,0 +1,53 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: django-migrations
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: mydb-available
+          image: busybox:1.28
+          command:
+            - sh
+            - -c
+            - |
+              echo "Sleeping for 30 seconds before checking database availability..."
+              sleep 30
+              until nc -z postgresdb 5432; do
+                echo "Database is not ready yet, retrying in 5 seconds..."
+                sleep 5
+              done
+              echo "PostgreSQL is available!"
+      containers:
+        - name: migration
+          image: fadhiljr/django-admin:v8
+          command:
+            - sh
+            - -c
+            - |
+              echo "Running migrations..."
+              if ! python manage.py migrate; then
+                echo "Migration failed!" >&2
+                exit 1
+              fi
+              echo "Collecting static files..."
+              if ! python manage.py collectstatic --noinput; then
+                echo "Collectstatic failed!" >&2
+                exit 1
+              fi
+              echo "Migration and static files completed successfully."
+              echo "Checking if superuser exists..."
+              if ! python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); print(User.objects.filter(username='$SUPERUSER_USERNAME').exists())" | grep -q "True"; then
+                echo "Creating superuser..."
+                if ! echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('$SUPERUSER_USERNAME', '$SUPERUSER_EMAIL', '$SUPERUSER_PASSWORD')" | python manage.py shell; then
+                  echo "Superuser creation failed!" >&2
+                  exit 1
+                fi
+              else
+                echo "Superuser already exists, skipping creation."
+              fi             
+          envFrom:
+            - secretRef:
+                name: admin-secret
+      restartPolicy: Never

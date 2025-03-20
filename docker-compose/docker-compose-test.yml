@@ -1,0 +1,65 @@
+services:
+  django-admin:
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    container_name: django-app-new
+    environment:
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DATABASE_HOST: mydb
+      DATABASE_PORT: 5432
+      SECRET_KEY: ${SECRET_KEY}
+      DEBUG: ${DEBUG}
+      SUPERUSER_USERNAME: ${SUPERUSER_USERNAME}
+      SUPERUSER_EMAIL: ${SUPERUSER_EMAIL}
+      SUPERUSER_PASSWORD: ${SUPERUSER_PASSWORD}
+    command: >
+      sh -c "
+        python manage.py migrate &&
+        if ! python manage.py shell -c 'from django.contrib.auth import get_user_model; User = get_user_model(); print(User.objects.filter(username=\"$SUPERUSER_USERNAME\").exists())' | grep -q 'True'; then
+          echo \"from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('$SUPERUSER_USERNAME', '$SUPERUSER_EMAIL', '$SUPERUSER_PASSWORD')\" | python manage.py shell;
+        fi &&
+        exec gunicorn app.wsgi:application
+      "
+    depends_on:
+      mydb:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    networks:
+      - django-net-new
+    env_file:
+      - .env
+
+  mydb:
+    image: postgres:13
+    container_name: django-db
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      timeout: 10s
+      retries: 5
+      interval: 10s
+      start_period: 10s
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ../scripts/init-scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - django-net-new
+    env_file:
+      - .env
+
+networks:
+  django-net-new:
+    driver: bridge
+
+volumes:
+  db_data:
+    driver: local
