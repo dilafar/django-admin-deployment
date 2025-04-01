@@ -172,7 +172,7 @@ data:
 - **Option 2: ArgoCD CLI**
 ```sh
 argocd app create django-app \
-  --repo https://github.com/dilafar/devops-assessment.git \
+  --repo https://github.com/dilafar/django-admin-deployment.git \
   --path helm \
   --revision main \
   --helm-set-file charts/djangoapp/values.yaml \
@@ -193,7 +193,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/dilafar/devops-assessment.git
+    repoURL: https://github.com/dilafar/django-admin-deployment.git
     path: helm
     targetRevision: main
     helm:
@@ -227,3 +227,14 @@ argocd app get django-app
 3️⃣ **Verify Application Rollout & Rollback**
 - Changes in **Helm chart** and **Git repository** will auto-deploy.
 - In case of failure, ArgoCD will automatically rollback to the last stable version.
+
+ArgoCD
+
+![djapp3](https://github.com/user-attachments/assets/01a7366e-0fa0-4190-abdb-ff9a881b3f2b)
+
+![djapp4](https://github.com/user-attachments/assets/dace7e04-c4da-443d-b683-c3e7dcf6e4d0)
+
+![djapp5](https://github.com/user-attachments/assets/218b5284-6592-46b7-8b61-ce99840c9fef)
+
+
+
