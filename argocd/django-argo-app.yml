@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/dilafar/devops-assessment.git
+    repoURL: https://github.com/dilafar/django-admin-deployment.git
     path: helm
     targetRevision: main
     helm:
@@ -16,7 +16,6 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: default
-    name: in-cluster
   syncPolicy:
     automated:
       prune: true
