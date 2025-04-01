@@ -21,7 +21,7 @@ spec:
               echo "PostgreSQL is available!"
       containers:
         - name: migration
-          image: "{{ .Values.appImage }}:{{ .Values.appVersion }}"
+          image: fadhiljr/django-admin:v8
           command:
             - sh
             - -c

@@ -2,20 +2,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.appName }}
+  name: django-app
 spec:
-  replicas: {{ .Values.appReplicas }}
+  replicas: 2
   selector:
     matchLabels:
-      app: {{ .Values.appName }}
+      app: django-app
   template:
     metadata:
       labels:
-        app: {{ .Values.appName }}
+        app: django-app
     spec:
       initContainers:
       - name: check-job-status
-        image: "{{ .Values.kubectlImage }}:{{ .Values.kubectlImageVersion }}"
+        image: fadhiljr/kubernetes-tools:v1
         command:
           - /bin/sh
           - -c
@@ -31,22 +31,22 @@ spec:
               fi
             done
       containers:
-        - name: {{ .Values.appName }}
+        - name: django-app
           image: fadhiljr/django-admin:v8
           command:
             - sh
             - -c
-            - exec gunicorn app.wsgi:application
+            - exec gunicorn django_admin_example.wsgi:application
           envFrom:
             - secretRef:
-                name: {{ .Values.secretName }}
+                name: admin-secret
           volumeMounts:
             - name: static-volume
               mountPath: /usr/src/django-admin-example/staticfiles
             - name: media-volume
               mountPath: /usr/src/django-admin-example/media
           ports:
-            - containerPort: {{ .Values.containerPort }}
+            - containerPort: 8080
           securityContext:
             runAsNonRoot: true
             runAsUser: 1000
@@ -65,19 +65,18 @@ spec:
         persistentVolumeClaim:
           claimName: media-pvc
 
-
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.appName }}
+  name: django-app
   labels:
-    name: {{ .Values.appName }}
+    name: django-app
 spec:
   selector:
-    app: {{ .Values.appName }}
+    app: django-app
   ports:
-    - port: {{ .Values.servicePort }}
-      targetPort: {{ .Values.containerPort }}
+    - port: 8080
+      targetPort: 8080
       protocol: TCP
-  type: {{ .Values.serviceType }}
+  type: ClusterIP
