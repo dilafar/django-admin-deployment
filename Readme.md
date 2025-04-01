@@ -23,14 +23,14 @@ Follow the [official Minikube installation guide](https://minikube.sigs.k8s.io/d
 
 2️⃣ **Start Minikube with 3 Nodes (1 Master, 2 Workers)**
 ```sh
-minikube start --nodes 3 -p multinode-demo
+minikube start --nodes 3 -p multinode-demo-new
 ```
 
 3️⃣ **Verify Cluster Status**
 ```sh
-minikube status -p multinode-demo
+minikube status -p multinode-demo-new
 ```
-![3](https://github.com/user-attachments/assets/a194f9c0-bd23-419a-a154-1a886360dd52)
+![djapp1](https://github.com/user-attachments/assets/ec808ed6-e127-4ec4-8a4e-f8d26a0ec429)
 
 ---
 
@@ -38,7 +38,7 @@ minikube status -p multinode-demo
 
 1️⃣ **enable ingress & nginx ingress controller**
 ```sh
-minikube addons enable ingress -p multinode-demo
+minikube addons enable ingress -p multinode-demo-new
 ```
 
 2️⃣ **Add a DNS entry in /etc/hosts for the DNS host specified in the Ingress**
@@ -220,9 +220,9 @@ argocd app get django-app
 
 2️⃣ **Start Ingress Service In Minikube**
 ```sh
- minikube tunnel -p multinode-demo
+ minikube tunnel -p multinode-demo-new
 ```
-![Screenshot 2025-03-04 101346](https://github.com/user-attachments/assets/94146e8f-6f3c-45d1-85f3-af7639391a95)
+![djapp2](https://github.com/user-attachments/assets/e93e014c-f18f-4764-a526-00694993684a)
 
 3️⃣ **Verify Application Rollout & Rollback**
 - Changes in **Helm chart** and **Git repository** will auto-deploy.
