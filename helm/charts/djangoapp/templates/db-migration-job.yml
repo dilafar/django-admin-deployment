@@ -31,7 +31,12 @@ spec:
                 echo "Migration failed!" >&2
                 exit 1
               fi
-
+              echo "Collecting static files..."
+              if ! python manage.py collectstatic --noinput; then
+                echo "Collectstatic failed!" >&2
+                exit 1
+              fi
+              echo "Migration and static files completed successfully."
               echo "Checking if superuser exists..."
               if ! python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); print(User.objects.filter(username='$SUPERUSER_USERNAME').exists())" | grep -q "True"; then
                 echo "Creating superuser..."

@@ -23,7 +23,8 @@ spec:
             - name: media-volume
               mountPath: /usr/src/django-admin-example/media
             - name: nginx-config
-              mountPath: /etc/nginx/conf.d/
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: default.conf
       volumes:
         - name: static-volume
           persistentVolumeClaim:

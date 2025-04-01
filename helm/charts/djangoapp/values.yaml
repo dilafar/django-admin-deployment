@@ -1,6 +1,6 @@
 jobName: django-migrations
-appImage: fadhiljr/assignment
-appVersion: v1
+appImage: fadhiljr/django-admin
+appVersion: v8
 secretName: admin-secret
 appName: django-app
 appReplicas: 2

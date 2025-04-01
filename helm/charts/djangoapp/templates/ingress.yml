@@ -11,6 +11,6 @@ spec:
             path: /
             backend:
               service:
-                name: {{ .Values.appName }}
+                name: nginx-service
                 port:
-                  number: {{ .Values.servicePort }}
+                  number: 80
