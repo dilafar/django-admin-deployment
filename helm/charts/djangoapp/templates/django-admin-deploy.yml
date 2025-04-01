@@ -2,16 +2,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: django-app
+  name: {{ .Values.appName }}
 spec:
-  replicas: 2
+  replicas: {{ .Values.appReplicas }}
   selector:
     matchLabels:
-      app: django-app
+      app: {{ .Values.appName }}
   template:
     metadata:
       labels:
-        app: django-app
+        app: {{ .Values.appName }}
     spec:
       initContainers:
       - name: check-job-status
@@ -31,7 +31,7 @@ spec:
               fi
             done
       containers:
-        - name: django-app
+        - name: {{ .Values.appName }}
           image: fadhiljr/django-admin:v8
           command:
             - sh
@@ -39,14 +39,14 @@ spec:
             - exec gunicorn django_admin_example.wsgi:application
           envFrom:
             - secretRef:
-                name: admin-secret
+                name: {{ .Values.secretName }}
           volumeMounts:
             - name: static-volume
               mountPath: /usr/src/django-admin-example/staticfiles
             - name: media-volume
               mountPath: /usr/src/django-admin-example/media
           ports:
-            - containerPort: 8080
+            - containerPort: {{ .Values.containerPort }}
           securityContext:
             runAsNonRoot: true
             runAsUser: 1000
@@ -69,14 +69,14 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: django-app
+  name: {{ .Values.appName }}
   labels:
-    name: django-app
+    name: {{ .Values.appName }}
 spec:
   selector:
-    app: django-app
+    app: {{ .Values.appName }}
   ports:
-    - port: 8080
-      targetPort: 8080
+    - port: {{ .Values.servicePort }}
+      targetPort: {{ .Values.containerPort }}
       protocol: TCP
-  type: ClusterIP
+  type: {{ .Values.serviceType }}
